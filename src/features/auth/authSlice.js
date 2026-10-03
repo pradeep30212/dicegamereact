@@ -12,6 +12,7 @@ export const login = createAsyncThunk('auth/login', async (credentials, { reject
 
 export const register = createAsyncThunk('auth/register', async (payload, { rejectWithValue }) => {
   try {
+    console.log('register payload', payload);
     return await authService.register(payload);
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || 'Could not create that account.');

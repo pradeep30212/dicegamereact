@@ -7,7 +7,7 @@ export default function Login() {
   const dispatch = useDispatch();
   const { status, error } = useSelector((state) => state.auth);
   const [mode, setMode] = useState('login'); // 'login' | 'register'
-  const [form, setForm] = useState({ username: '', password: '', displayName: '' });
+  const [form, setForm] = useState({ username: '', email: '', password: '', displayName: '' });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -32,7 +32,7 @@ export default function Login() {
           {mode === 'login' ? 'Sign in to take your turn.' : 'Create an account to join a group.'}
         </p>
 
-        <label htmlFor="username">Username</label>
+        <label htmlFor="username">Username {mode !== 'register' ? '/Email' : ''}</label>
         <input
           id="username"
           name="username"
@@ -44,6 +44,15 @@ export default function Login() {
 
         {mode === 'register' && (
           <>
+          <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Email address"
+              required
+            />
             <label htmlFor="displayName">Display name</label>
             <input
               id="displayName"

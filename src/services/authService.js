@@ -1,44 +1,52 @@
 import api from './api';
 
 // ---------------------------------------------------------------------------
-// Expected .NET Core Web API contract (adjust paths to match your controller):
+// Actual .NET Core Web API response shape (as returned today):
 //
-//   POST /api/auth/register  { username, password, displayName }
-//        -> 200 { accessToken, expiresIn, user: { id, username, displayName } }
-//           + Set-Cookie: refreshToken=...; HttpOnly; Secure; SameSite=Strict
+//   POST /api/auth/login   { username, password }
+//   POST /api/auth/register { username, email, password, displayName }
+//        -> 200 {
+//             success: true,
+//             message: "Login successful",
+//             token: "<jwt>",
+//             user: { id, email, username, displayName, createdAt }
+//           }
+//        -> 200 { success: false, message: "..." } on a rejected login
+//           (wrong password etc. — this API reports that as 200/success:false
+//           rather than a 401, so we check `success` explicitly below)
 //
-//   POST /api/auth/login     { username, password }
-//        -> same shape as register
-//
-//   POST /api/auth/refresh   (no body — reads the httpOnly refresh cookie)
-//        -> 200 { accessToken, expiresIn, user }
-//        -> 401 if the refresh token is missing/expired/revoked
+//   POST /api/auth/refresh   (reads the httpOnly refresh cookie)
+//        -> same shape as login; 401 if the refresh token is missing/expired
 //
 //   POST /api/auth/logout    (reads the httpOnly refresh cookie)
-//        -> 204, and clears/revokes the refresh cookie server-side
+//        -> 204
 //
-//   GET  /api/auth/me        (requires Authorization: Bearer <accessToken>)
-//        -> 200 { id, username, displayName }
-//
-// Keeping the refresh token in an HttpOnly cookie (rather than returning it
-// in the JSON body) means client-side JS never touches it, which is the
-// standard mitigation for refresh-token theft via XSS.
+// normalizeAuthResponse() below maps { token, user } to { accessToken, user }
+// so the rest of the app (authSlice.js) only ever deals with one shape,
+// regardless of which endpoint produced it.
 // ---------------------------------------------------------------------------
 
+function normalizeAuthResponse(data) {
+  if (data?.success === false) {
+    throw new Error(data.message || 'Authentication failed.');
+  }
+  return { accessToken: data.token, user: data.user };
+}
+
 const authService = {
-  register: async ({ username, password, displayName }) => {
-    const { data } = await api.post('/auth/register', { username, password, displayName });
-    return data;
+  register: async ({ username, email, password, displayName }) => {
+    const { data } = await api.post('/auth/register', { username, email, password, displayName });
+    return normalizeAuthResponse(data);
   },
 
   login: async ({ username, password }) => {
     const { data } = await api.post('/auth/login', { username, password });
-    return data;
+    return normalizeAuthResponse(data);
   },
 
   refresh: async () => {
     const { data } = await api.post('/auth/refresh', {});
-    return data;
+    return normalizeAuthResponse(data);
   },
 
   logout: async () => {

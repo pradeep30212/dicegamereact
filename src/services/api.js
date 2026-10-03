@@ -36,6 +36,17 @@ function resolvePendingRequests(newToken) {
   pendingRequests = [];
 }
 
+// Pulled out so the raw refresh call here accepts the same response shapes
+// authService.js's normalizeAuthResponse() does: your API returns the token
+// as `token` (wrapped with `success`/`message`), but this stays forward
+// -compatible with a plain `accessToken` field too, in case that changes.
+function extractAccessToken(data) {
+  if (data?.success === false) {
+    throw new Error(data.message || 'Refresh failed.');
+  }
+  return data?.token ?? data?.accessToken;
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -66,9 +77,10 @@ api.interceptors.response.use(
           {},
           { withCredentials: true }
         );
-        tokenService.setAccessToken(data.accessToken);
-        resolvePendingRequests(data.accessToken);
-        config.headers.Authorization = `Bearer ${data.accessToken}`;
+        const newAccessToken = extractAccessToken(data);
+        tokenService.setAccessToken(newAccessToken);
+        resolvePendingRequests(newAccessToken);
+        config.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(config);
       } catch (refreshError) {
         tokenService.clearAccessToken();

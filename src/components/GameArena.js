@@ -36,6 +36,8 @@ export default function GameArena() {
 
   // The server is the real gatekeeper (it returns 403 on someone else's
   // turn); this only decides whether the button is enabled.
+
+  console.log('user?.displayName: status, currentTurn', user?.displayName, status, currentTurn);
   const isMyTurn = status === 'playing' && namesMatch(user?.displayName, currentTurn);
 
   const handleRoll = async () => {
