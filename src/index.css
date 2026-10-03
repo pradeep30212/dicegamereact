@@ -1,0 +1,30 @@
+:root {
+  --ink: #1c1b29;
+  --paper: #f6f3ec;
+  --felt: #1e4d3a;
+  --felt-light: #2f6b52;
+  --amber: #d98e3a;
+  --ivory-die: #fbf9f4;
+  --danger: #b3402c;
+  --muted: #8a8578;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Georgia', 'Iowan Old Style', serif;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+button {
+  font-family: inherit;
+}
+
+input {
+  font-family: inherit;
+}
