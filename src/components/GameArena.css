@@ -233,56 +233,16 @@
 }
 
 /* ---------------- dice ---------------- */
-.dice-row {
-  display: flex;
-  gap: clamp(1rem, 4vw, 1.75rem);
-}
-
-.die {
-  --die: clamp(72px, 16vw, 104px);
-  width: var(--die);
-  height: var(--die);
-  padding: calc(var(--die) * 0.13);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  background: var(--ivory-die);
-  border-radius: calc(var(--die) * 0.18);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3), inset 0 -4px 6px rgba(0, 0, 0, 0.08);
-}
-
-.die.is-blank {
-  opacity: 0.6;
-}
-
-.pip {
-  place-self: center;
-  width: 72%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-}
-
-.pip.on {
-  background: var(--ink);
-  box-shadow: inset 0 -2px 3px rgba(255, 255, 255, 0.18);
-}
-
-@keyframes tumble {
-  0%   { transform: translateY(0) rotate(0deg); }
-  25%  { transform: translateY(-14px) rotate(-14deg); }
-  50%  { transform: translateY(0) rotate(10deg); }
-  75%  { transform: translateY(-8px) rotate(-8deg); }
-  100% { transform: translateY(0) rotate(0deg); }
-}
-
-.die.is-rolling {
-  animation: tumble 0.45s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .die.is-rolling {
-    animation: none;
-  }
+/* The dice themselves (the 3D cube, faces and pips) are styled in Dice.css,
+   imported directly by Dice.js. This is the bounded "table" they wander
+   across while rolling — each Dice is positioned absolutely inside it via
+   inline left/top percentages, so it needs an explicit size rather than
+   being sized by its (now absolutely-positioned, flow-less) children. */
+.dice-table {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  height: clamp(120px, 24vw, 170px);
 }
 
 /* ---------------- roll button + messages ---------------- */

@@ -32,12 +32,10 @@ export default function GameArena() {
 
   if (!group) return null;
 
-  const { id, name, activePlayers, waitingQueue, currentTurn, diceValues, gameHistory, status, winner } = group;
+  const { id, name, activePlayers, waitingQueue, currentTurn, diceValues, gameHistory, status } = group;
 
   // The server is the real gatekeeper (it returns 403 on someone else's
   // turn); this only decides whether the button is enabled.
-
-  console.log('user?.displayName: status, currentTurn', user?.displayName, status, currentTurn);
   const isMyTurn = status === 'playing' && namesMatch(user?.displayName, currentTurn);
 
   const handleRoll = async () => {
@@ -79,63 +77,57 @@ export default function GameArena() {
       </header>
 
       <div className="arena-body">
+        {/* No "game over" screen: a table only ever leaves this view when
+            the signed-in player explicitly clicks Leave above. A win just
+            starts the next match — see the "stays on for a rematch" event
+            in the log below. */}
         <section className="play-area" aria-label="Playing area">
-          {status === 'finished' ? (
-            <div className="finished-panel">
-              <Avatar name={winner} size={88} />
-              <h2>{winner} wins {name}!</h2>
-              <p>Everyone else in the queue has been beaten.</p>
-              <button type="button" className="roll-btn" onClick={handleLeave} disabled={isLeaving}>
-                Back to dashboard
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="players-row">
-                {[0, 1].map((slot) => {
-                  const player = activePlayers[slot];
-                  if (!player) {
-                    return (
-                      <div key={`empty-${slot}`} className="player-slot is-empty">
-                        <span className="seat-placeholder">?</span>
-                        <span className="player-name">Open seat</span>
-                      </div>
-                    );
-                  }
-                  const isTurn = player === currentTurn;
-                  return (
-                    <React.Fragment key={player}>
-                      {slot === 1 && <span className="versus">vs</span>}
-                      <div className={`player-slot ${isTurn ? 'is-turn' : ''}`}>
-                        <Avatar name={player} size={64} />
-                        <span className="player-name">
-                          {player}
-                          {namesMatch(user?.displayName, player) && <em className="you-tag"> (you)</em>}
-                        </span>
-                        {isTurn && <span className="turn-badge">Rolling now</span>}
-                      </div>
-                    </React.Fragment>
-                  );
-                })}
-              </div>
+          <div className="players-row">
+            {[0, 1].map((slot) => {
+              const player = activePlayers[slot];
+              if (!player) {
+                return (
+                  <div key={`empty-${slot}`} className="player-slot is-empty">
+                    <span className="seat-placeholder">?</span>
+                    <span className="player-name">Open seat</span>
+                  </div>
+                );
+              }
+              const isTurn = player === currentTurn;
+              return (
+                <React.Fragment key={player}>
+                  {slot === 1 && <span className="versus">vs</span>}
+                  <div className={`player-slot ${isTurn ? 'is-turn' : ''}`}>
+                    <Avatar name={player} size={64} />
+                    <span className="player-name">
+                      {player}
+                      {namesMatch(user?.displayName, player) && <em className="you-tag"> (you)</em>}
+                    </span>
+                    {isTurn && <span className="turn-badge">Rolling now</span>}
+                  </div>
+                </React.Fragment>
+              );
+            })}
+          </div>
 
-              <div className="dice-row">
-                <Dice value={diceValues?.[0]} rolling={isRolling} />
-                <Dice value={diceValues?.[1]} rolling={isRolling} />
-              </div>
+          {/* A bounded area the dice can wander across while rolling —
+              each one has its own "home" spot (homeX, as a % of this
+              table's width) that it returns to once it settles. */}
+          <div className="dice-table">
+            <Dice value={diceValues?.[0]} rolling={isRolling} homeX={32} />
+            <Dice value={diceValues?.[1]} rolling={isRolling} homeX={68} />
+          </div>
 
-              <p className={`turn-hint ${isMyTurn ? 'is-mine' : ''}`}>{hint}</p>
+          <p className={`turn-hint ${isMyTurn ? 'is-mine' : ''}`}>{hint}</p>
 
-              <button type="button" className="roll-btn" onClick={handleRoll} disabled={!isMyTurn || isRolling}>
-                {isRolling ? 'Rolling…' : 'Roll dice'}
-              </button>
+          <button type="button" className="roll-btn" onClick={handleRoll} disabled={!isMyTurn || isRolling}>
+            {isRolling ? 'Rolling…' : 'Roll dice'}
+          </button>
 
-              {rollError && (
-                <p className="roll-error" role="alert" onClick={() => dispatch(clearRollError())}>
-                  {rollError}
-                </p>
-              )}
-            </>
+          {rollError && (
+            <p className="roll-error" role="alert" onClick={() => dispatch(clearRollError())}>
+              {rollError}
+            </p>
           )}
         </section>
 

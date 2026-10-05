@@ -1,0 +1,79 @@
+/* A real cube, not a flat square with pips: six .dice-face children are
+   placed on the faces of a 3D box via rotate + translateZ, and the cube
+   itself rotates (driven from Dice.js) to show the rolled value. */
+
+.dice-scene {
+  --die: clamp(48px, 10vw, 68px);
+  width: var(--die);
+  height: var(--die);
+  /* A shallow depth of field keeps the cube from looking stretched when it's
+     this close to the "camera" — bigger divisor = flatter, more distant look. */
+  perspective: calc(var(--die) * 5);
+
+  /* Positioned within .dice-table (GameArena.css): `left`/`top` are set
+     inline from Dice.js as percentages of that table, and this fixed
+     translate keeps the percentage point centered on the die itself rather
+     than its top-left corner. transition-property only covers left/top —
+     the cube's own rotation has its own transition, set separately below. */
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transition-property: left, top;
+}
+
+.dice-cube {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition-property: transform;
+  /* transition-duration / timing-function are set inline per roll, since they
+     differ between "tumbling" (fast, linear) and "settling" (slower, eased). */
+}
+
+.dice-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: calc(var(--die) * 0.14);
+  background: var(--ivory-die);
+  border-radius: calc(var(--die) * 0.18);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.18);
+  /* Each face is a solid, opaque square, so the ones facing away are simply
+     covered by the faces in front — this just skips rendering them. */
+  backface-visibility: hidden;
+}
+
+/* Placing the six faces: opposite faces (1-6, 2-5, 3-4) sum to 7, same as a
+   real die. translateZ pushes each face out to the cube's surface. */
+.dice-face[data-face='1'] {
+  transform: translateZ(calc(var(--die) / 2));
+}
+.dice-face[data-face='2'] {
+  transform: rotateY(90deg) translateZ(calc(var(--die) / 2));
+}
+.dice-face[data-face='3'] {
+  transform: rotateX(90deg) translateZ(calc(var(--die) / 2));
+}
+.dice-face[data-face='4'] {
+  transform: rotateX(-90deg) translateZ(calc(var(--die) / 2));
+}
+.dice-face[data-face='5'] {
+  transform: rotateY(-90deg) translateZ(calc(var(--die) / 2));
+}
+.dice-face[data-face='6'] {
+  transform: rotateY(180deg) translateZ(calc(var(--die) / 2));
+}
+
+.pip {
+  place-self: center;
+  width: 62%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+.pip.on {
+  background: var(--ink);
+  box-shadow: inset 0 -2px 3px rgba(255, 255, 255, 0.18);
+}
